@@ -1,0 +1,54 @@
+<!doctype html>
+
+<html>
+    <title>
+    Users Space
+    </title>
+    <head>
+        <style>
+            h1 {
+                text-align: center;
+            }
+
+            div{
+                float: left;
+                width: 40%;
+            }
+
+            figure{
+                float: right;
+                margin-top: -19%;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <h1> Control the ARDUCAM mp </h1>
+        <div>
+            <h2>Why this site?</h2>
+            <p>
+                You can configure the 64mp arducam to observe the evolution
+                 of the ecosystem of the UPC's OBSEA artificial reef.
+            </p>
+            <form action = "/" method = "post">
+                <h2>What do you want to do?</h2>
+                <p>
+                    <select name="action" size="3">
+                        <option>Picture</option>
+                        <option>Video</option>
+                    </select>
+                </p>
+                <p>
+                    <input type="hidden" name="action" value="Picture" />
+                </p>
+                <p>
+                    <input type="submit" value="submit" />
+                </p>
+            </form>
+        </div>
+        <figure>
+            <img src="/static/home.png" alt="img">
+            <figcaption>Plateform OBSEA</figcaption>
+        </figure>
+    </body>
+</html>
