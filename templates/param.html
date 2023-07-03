@@ -1,0 +1,33 @@
+<!doctype html>
+
+<html>
+    <title>
+        Video
+    </title>
+    <body>
+        <div>
+            <form action = "/Param" method = "post">
+                <h2>Choose the desired parameters</h2>
+                <p>Enter the width :</p>
+                <p>
+                    <input type = "text" name = "width" value="640"/>
+                </p>
+                <p>Enter the height :</p>
+                <p>
+                    <input type = "text" name = "height" value="480"/>
+                </p>
+                <p>Enter duration*</p>
+                <p>
+                    <input type = "text" name = "duration" value="0"/>
+                </p>
+                <p id="condition">*If duration where 0 is unlimited </p>
+                <p>
+                    <input type="submit" name ="param" value="Submit" />
+                </p>
+            </form>
+        </div>
+
+        <div id="picture">
+        </div>
+    </body>
+</html>
