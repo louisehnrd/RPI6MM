@@ -1,0 +1,99 @@
+<!doctype html>
+
+<html>
+    <title>
+        Picture
+    </title>
+    <body>
+        <div>
+            <form action = "/Picture" method = "post">
+                <h2>Choose the desired parameters</h2>
+                <p>Enter the width :</p>
+                <p>
+                    <input type = "text" name = "width" value="640"/>
+                </p>
+                <p>Enter the height :</p>
+                <p>
+                    <input type = "text" name = "height" value="480"/>
+                </p>
+                <p>Enter duration</p>
+                <p>
+                    <input type = "text" name = "duration" value="2000"/>
+                </p>
+                <p>Enter shutter</p>
+                <p>
+                    <input type = "text" name = "shutter" value="20000"/>
+                </p>
+                <p>Enter gain</p>
+                <p>
+                    <input type = "text" name = "gain" value="1"/>
+                </p>
+                <p>Enter period in minutes</p>
+                <p>
+                    <input type = "text" name = "period" value="1"/>
+                </p>
+                <p>
+                    <input type="submit" name ="param" value="Submit" />
+                </p>
+            </form>
+        </div>
+        <div>
+            <form action = "/Picture" method = "post">
+                <p> A photo is taken periodically. 
+                If you want to stop, click here </p>
+                <p>
+                    <input type="submit" name ="change" value="stop" />
+                </p>
+            </form>
+        </div>
+
+        <div id="picture">
+        </div>
+
+        <script>
+            //Function for resizing an image
+            function resizeImage(image, newWidth, newHeight) {
+                //Creating a <canvas> element
+                var canvas = document.createElement('canvas');
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                
+                //Draw the image on the canvas at the new size
+                var context = canvas.getContext('2d');
+                context.drawImage(image, 0, 0, newWidth, newHeight);
+                
+                //Converting the canvas into a new image
+                var resizedImage = new Image();
+                resizedImage.src = canvas.toDataURL('image/jpeg');
+                
+                //Returns the resized image
+                return resizedImage;
+            }
+              
+            //Automatic photo change function
+            function changerPhotoAutomatiquement() {
+                //Creating the <img> element
+                var image = document.createElement('img');
+                
+                //Definition of the src attribute
+                image.src = "{{ user_image }}";
+                
+                //Resize image to desired size (640x480)
+                var newWidth = 640;
+                var newHeight = 480;
+                var resizedImage = resizeImage(image, newWidth, newHeight);
+                
+                //Deleting the old image
+                var pictureElement = document.getElementById('picture');
+                while (pictureElement.firstChild) {
+                    pictureElement.removeChild(pictureElement.firstChild);
+                }
+                
+                //Add the new resized image
+                pictureElement.appendChild(resizedImage);
+            }
+            
+            //Calls up the function to change the photo every seconds
+            setInterval(changerPhotoAutomatiquement, 1000); 
+        </script>
+    </body>    
