@@ -4,6 +4,8 @@ from flask_socketio import SocketIO
 import socket
 import threading
 
+#https://www.twilio.com/docs/voice/tutorials/consume-real-time-media-stream-using-websockets-python-and-flask
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 socketio = SocketIO(app)
