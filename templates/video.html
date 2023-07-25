@@ -1,17 +1,75 @@
 <!doctype html>
 
 <html>
-    <title>
-        VIDEO
-    </title>
+    <head>
+        <title>
+            VIDEO
+        </title>
+        <script src="https://www.youtube.com/iframe_api"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+    </head>
     <body>
         <div>
-            <form action = "/Video" method = "post">
-                <p> If you want to stop and save the video, click here </p>
+            <h2>Follow these instructions to display the stream</h2>
+                <ol>
+                    <li>
+                        <p>type the following command in your command terminal connected to the board via ssh</p>
+                        <pre>
+                            <code>
+                                libcamera-vid -t 0 --width {{width}} --height {{height}} --codec h264 --inline -o - | cvlc -vvv stream:///dev/stdin --sout '#rtp{sdp=rtsp://:5554/}' :demux=h264
+                            </code>
+                        </pre>
+                    </li>
+                    <li>Open OBS and start the stream of your source on Youtube</li>
+                </ol>
+        </div>
+        <div>
+            <!--Insert Livestream Video-->
+            <iframe id="live-video" src="https://www.youtube.com/embed/live_stream?channel=<channel_ID>&enablejsapi=1&version=3&origin=http://<address_IP_camera>:5000/" width="560" height="315" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen enablejsapi="1"></iframe>
+        </div>
+        <div>
+            <form id="stop">
+                <p>If you want stop the stream click here and stop the stream on OBS</p>
                 <p>
-                    <input type="submit" name ="stop" value="stop&save" />
+                    <input type="submit" id="stop" value="stop stream">
                 </p>
             </form>
         </div>
+        <script>
+            var player;
+            function onYouTubeIframeAPIReady() {
+            player = new YT.Player('live-video', {
+                events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+                }
+            });
+            }
+            function onPlayerReady() {
+            var url = player.getVideoUrl(); /*Use Youtube API to pull Video URL*/
+            var match = url.match(/[?&]v=([^&]+)/); 
+            var videoId = match[1]; /*Use regex to determine exact Video URL*/
+            /*Insert a new iFrame for the livestream chat after a specific div named chatframe*/
+            var livevid = document.createElement("iframe");
+            livevid.src = 'https://www.youtube.com/live_chat?v=' + videoId + '&embed_domain=[MY_DOMAIN_HERE]'
+            livevid.width = '100%';
+            livevid.height= '400px';
+            document.getElementById("chatframe").appendChild(livevid);
+            }
+            function onPlayerStateChange() {
+            }
+
+            let socket = io();
+            let stop = document.getElementById('stop');
+            stop.addEventListener('submit',function(event) {
+                event.preventDefault();
+                socket.emit('stop_stream',{'stop':true});
+            });
+
+            socket.on('redirect', function() {
+            // Redirection côté client vers l'URL 'choice'
+            window.location.href = '/';
+            });
+        </script>
     </body>
 </html>
