@@ -5,7 +5,7 @@ from video import take_picture
 
 def take_periodic_pic():
     #Load configuration from JSON file
-    with open('/home/RPI6MM/user_space/config_pic.json','r') as config_file:
+    with open('/home/<name_camera>/user_space/config_pic.json','r') as config_file:
         config = json.load(config_file)
     config_file.close()
 
