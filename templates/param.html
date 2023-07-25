@@ -5,26 +5,39 @@
         Video
     </title>
     <body>
-        <div>
+        <div id="param">
             <form action = "/Param" method = "post">
                 <h2>Choose the desired parameters</h2>
                 <p>Enter the width :</p>
                 <p>
-                    <input type = "text" name = "width" value="640"/>
+                    <input type = "text" name = "width" value="1920"/>
                 </p>
                 <p>Enter the height :</p>
                 <p>
-                    <input type = "text" name = "height" value="480"/>
+                    <input type = "text" name = "height" value="1080"/>
                 </p>
                 <p>Enter duration*</p>
                 <p>
                     <input type = "text" name = "duration" value="0"/>
                 </p>
                 <p id="condition">*If duration where 0 is unlimited </p>
+                <p>Enter a period :</p>
+                <p id="'condition">If you want a continuous feed, enter a photo-taking period in minutes.</p>
+                <p>
+                    <input type = "text" name = "period" value="1"/>
+                </p>
                 <p>
                     <input type="submit" name ="param" value="Submit" />
                 </p>
             </form>
+        </div>
+        <div id="return">
+            <form action="/Param" method ="post">
+                <p>to return to the home page click here</p>
+                <p>
+                    <input type="submit" name ="return" value="Return" />
+                </p>
+            </form>        
         </div>
 
         <div id="picture">
