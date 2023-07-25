@@ -4,10 +4,13 @@ import os
 import time
 from picamera2 import Picamera2
 import json
+from flask_socketio import SocketIO, emit
+from crontab import CronTab
 
 app = Flask(__name__)
-VID_FOLDER = os.path.join('static')
-app.config['UPLOAD_FOLDER'] = VID_FOLDER
+socketio = SocketIO(app)
+PIC_FOLDER = os.path.join('static','picture_shutter')
+app.config['UPLOAD_FOLDER'] = PIC_FOLDER
 app.config["DEBUG"] = True
 
 @app.route('/',methods=['POST','GET'])
@@ -24,32 +27,54 @@ def choice():
 @app.route('/Param', methods=['POST', 'GET'])
 def param():
     if request.method == 'POST':
-        width = int(request.form['width'])
-        height = int(request.form['height'])
-        duration = int(request.form['duration'])
-        update_config_vid(False,width,height,duration)
-        if duration == 0:
-            print("je suis la")
-            return redirect(url_for('video'))
-        take_video(duration, width, height)
+        #test if parameters have been chosen
+        if 'param' in request.form :
+            width = int(request.form['width'])
+            height = int(request.form['height'])
+            duration = int(request.form['duration'])
+            period = int(request.form['period'])
+            update_config_vid(width,height,duration,period)  #update file json
+            #test if we want a continuous stream
+            if duration == 0:
+                return redirect(url_for('video'))
+            
+            #take a video
+            take_video(duration, width, height)
+    
+        #test if you want to return to the home page
+        elif 'return' in request.form :
+            return redirect(url_for('choice'))
     return render_template('param.html')
 
 @app.route('/Video', methods=['POST', 'GET'])
 def video():
-    if request.method == 'POST':
-        #loading the json file
-        with open('config_vid.json', 'r') as file:
-            config = json.load(file)
-        width=int(config['width'])
-        height=int(config['height'])
-        duration=int(config['duration'])
-        #stream youtube
-        #display stream youtube
 
-        if 'stop' in request.form:
-            #stop stream youtube
-            return redirect(url_for('choice'))
-    return render_template('video.html')
+    
+    #loading the json file
+    with open('config_vid.json', 'r') as file:
+        config = json.load(file)
+
+    #updating data
+    width=config['width']
+    height=config['height']
+    period=config['period']
+
+    create_cron(period,'capture_image.sh')
+
+    return render_template('video.html',width=width, height=height)
+
+
+
+@socketio.on('stop_stream')
+def stop_stream(data):
+    cron = CronTab(user='RPI6MM')
+    for job in cron:
+        if job.command == '/home/RPI6MM/user_space/capture_image.sh >> /home/RPI6MM/user_space/sortie.txt 2>&1':
+            cron.remove(job)
+            cron.write()
+    if data.get('stop') :
+        emit('redirect')
+
 
 @app.route('/Picture', methods=['POST', 'GET'])
 def picture():
@@ -57,7 +82,7 @@ def picture():
     if photo_recent != False:
         picture = os.path.join(app.config['UPLOAD_FOLDER'], photo_recent[-29:])
     else:
-        picture = os.path.join(app.config['UPLOAD_FOLDER'], 'home.png')
+        picture=None
 
     if request.method == 'POST':
         if 'param' in request.form:
@@ -68,12 +93,14 @@ def picture():
             gain = int(request.form['gain'])
             period = int(request.form['period'])
             update_config_pic(True,width,height,duration,shutter,gain)
-            create_cron(period)
+            create_cron(period,'script.sh')
 
         elif 'change' in request.form:
             update_config_pic(False,False,False,False,False,False)
             return redirect(url_for('choice'))
     return render_template('picture.html', user_space=picture)
+    
+
 
 if __name__ == '__main__':
-   app.run(host='0.0.0.0', port=5000)
+   socketio.run(app,host='0.0.0.0', port=5000)
