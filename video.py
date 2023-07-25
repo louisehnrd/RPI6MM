@@ -6,34 +6,19 @@ import subprocess
 from crontab import CronTab
 from datetime import datetime
 import cv2
-#libcamera-vid -t 0 --width 1920 --height 1080 --codec h264 --inline --listen -o tcp://0.0.0.0:8888
-#libcamera-jpeg -o test.jpg -t 2000 --width 640 --height 480 --shutter 20000 --gain 1
-def create_cron(period):
+
+def create_cron(period,name_script):
     
     cron = CronTab(user='RPI6MM')
     # Parcourir toutes les tâches dans la crontab
     for job in cron:
-        if job.command == '/home/RPI6MM/user_space/script.sh >> /home/RPI6MM/user_space/sortie.txt 2>&1':
+        if job.command == '/home/<name_camera>/user_space/script.sh >> /home/RPI6MM/user_space/sortie.txt 2>&1':
             # Supprimer la tâche correspondante
             cron.remove(job)
     
-    job = cron.new(command="/home/RPI6MM/user_space/script.sh >> /home/RPI6MM/user_space/sortie.txt 2>&1")
+    job = cron.new(command=f"/home/<name_camera>/user_space/{name_script} >> /home/RPI6MM/user_space/sortie.txt 2>&1")
     job.minute.every(period)
     cron.write()
-
-    """
-    cron_job = f"*/{period} * * * * /home/RPI6MM/user_space/script.sh >> /home/RPI6MM/user_space/sortie.txt 2>&1"
-    cron_file = "/etc/cron.d/my_cron"
-
-    # Supprimer le fichier cron existant s'il existe
-    if os.path.exists(cron_file):
-        os.remove(cron_file)
-
-    command = f"echo '{cron_job}' | sudo tee {cron_file}"
-    os.system(command)
-
-    print("Cron table created successfully.")
-    """
 
 def update_config_pic(on,width,height,duration,shutter,gain):
     #loading the json file
@@ -56,16 +41,16 @@ def update_config_pic(on,width,height,duration,shutter,gain):
     json_file.close()
 
 
-def update_config_vid(on,width,height,duration):    
+def update_config_vid(width,height,duration,period):    
     #loading the json file
     with open('config_vid.json', 'r') as file:
         config = json.load(file)
 
     #updating data
-    config['on'] = on
     config['width']=width
     config['height']=height
     config['duration']=duration
+    config['period'] = period
     print(config)
         
     #write to the json config file
@@ -93,7 +78,7 @@ def take_video(duration, width, height):
     #Image output path and file name
     timestamp = time.strftime('%Y_%m_%d-%H_%M_%S')
     filename = 'video_{}.h264'.format(timestamp)
-    output_file = os.path.join(os.path.expanduser("~"),"user_space", "static", filename)
+    output_file = os.path.join(os.path.expanduser("~"),"user_space", "static", "video",filename)
 
     picam2.pre_callback = apply_timestamp
     picam2.start_and_record_video(output_file, duration=duration)
@@ -103,36 +88,29 @@ def take_picture(width, height,duration,shutter,gain):
     #Image output path and file name
     timestamp = time.strftime('%Y_%m_%d-%H_%M_%S')
     filename = 'picture_{}.jpg'.format(timestamp)
-    output_file = os.path.join(os.path.expanduser("~"),"user_space", "static", filename)
+    output_file = os.path.join(os.path.expanduser("~"),"user_space", "static","picture_shutter", filename)
 
     command = f"libcamera-jpeg -o {output_file} -t {duration} --width {width} --height {height} --shutter {shutter} --gain {gain}"
     subprocess.run(command, shell=True)
 
 """function that returns the dates of the files given as arguments"""
 def date(file, file1):
-    date1=datetime(int(file[6:10]), int(file[11:13]), int(file[14:16]), int(file[17:19]), int(file[20:22]))
-    date2=datetime(int(file1[6:10]), int(file1[11:13]), int(file1[14:16]), int(file1[17:19]), int(file1[20:22]))
+    date1=datetime(int(file[8:12]), int(file[13:15]), int(file[16:18]), int(file[19:21]), int(file[22:24]))
+    date2=datetime(int(file1[8:12]), int(file1[13:15]), int(file1[16:18]), int(file1[19:21]), int(file1[22:24]))
     return date1, date2
 
 """function that returns the last photo taken"""
 def last_picture():
     #Path to the folder to be listed
-    folder = '/home/RPI6MM/user_space/static'
+    folder = '/home/<name_camera>/user_space/static/picture_shutter'
 
     #Lists all the files in the folder
     files = os.listdir(folder)
     i=0
     
     #test if no photo was taken
-    if len(files)==1:
+    if len(files)==0:
         return False
-    
-    #Removes the photo home.png from the list of photos to compare
-    for file in files:
-        if file == 'home.png' :
-            del files[i]
-            break
-        i+=1
     
     #comparison of picture dates
     recent_file = files[0]
@@ -145,4 +123,5 @@ def last_picture():
             path_file = os.path.join(folder, files[i])
             recent_file=files[i]
 
+    print(path_file)
     return path_file
