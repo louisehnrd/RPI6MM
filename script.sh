@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# Chemin complet du fichier Python
+# Full path to Python file
 python_script="/home/<name_camera>/user_space/periodic_picture.py"
 
-# Activation de l'environnement virtuel Python si nécessaire
-# source /chemin/vers/mon/environnement/virtuel/bin/activate
-
-# Lancement du script Python
+# Launching the Python script
 python3 $python_script
