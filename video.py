@@ -7,19 +7,22 @@ from crontab import CronTab
 from datetime import datetime
 import cv2
 
+"""Function that creates a cron table by deleting the current jobs and replacing them with jobs from the period given as an argument."""
 def create_cron(period,name_script):
     
-    cron = CronTab(user='RPI6MM')
-    # Parcourir toutes les tâches dans la crontab
+    cron = CronTab(user='<name_camera>')
+    # Browse all tasks in the crontab
     for job in cron:
-        if job.command == '/home/<name_camera>/user_space/script.sh >> /home/RPI6MM/user_space/sortie.txt 2>&1':
-            # Supprimer la tâche correspondante
+        if job.command == '/home/<name_camera>/user_space/script.sh >> /home/<name_camera>/user_space/sortie.txt 2>&1':
+            # Delete the corresponding task
             cron.remove(job)
-    
-    job = cron.new(command=f"/home/<name_camera>/user_space/{name_script} >> /home/RPI6MM/user_space/sortie.txt 2>&1")
+
+    #writing a new job
+    job = cron.new(command=f"/home/<name_camera>/user_space/{name_script} >> /home/<name_camera>/user_space/sortie.txt 2>&1")
     job.minute.every(period)
     cron.write()
 
+""""this function updates the config_pic.json file"""
 def update_config_pic(on,width,height,duration,shutter,gain):
     #loading the json file
     with open('config_pic.json', 'r') as file:
@@ -40,7 +43,7 @@ def update_config_pic(on,width,height,duration,shutter,gain):
         json.dump(config, json_file)        
     json_file.close()
 
-
+""""this function updates the config_vid.json file"""
 def update_config_vid(width,height,duration,period):    
     #loading the json file
     with open('config_vid.json', 'r') as file:
@@ -58,6 +61,7 @@ def update_config_vid(width,height,duration,period):
         json.dump(config, json_file)        
     json_file.close()
 
+"""this function sets the date and time to be added to a video/photo"""
 def apply_timestamp(request):
     colour = (0, 255, 0)
     origin = (0, 30)
@@ -68,8 +72,10 @@ def apply_timestamp(request):
     with MappedArray(request, "main") as m:
         cv2.putText(m.array, timestamp, origin, font, scale, colour, thickness)
 
+"""this function takes a video according to the parameters given in the arguments"""
 def take_video(duration, width, height):
-    
+
+    #camera initialization
     picam2 = Picamera2()
     capture_config = picam2.create_video_configuration({"size": (width,height)})
     picam2.align_configuration(capture_config)
@@ -80,9 +86,11 @@ def take_video(duration, width, height):
     filename = 'video_{}.h264'.format(timestamp)
     output_file = os.path.join(os.path.expanduser("~"),"user_space", "static", "video",filename)
 
+    ##record a video
     picam2.pre_callback = apply_timestamp
     picam2.start_and_record_video(output_file, duration=duration)
 
+"""this function takes a photo according to the parameters given as arguments"""
 def take_picture(width, height,duration,shutter,gain):
 
     #Image output path and file name
@@ -90,6 +98,7 @@ def take_picture(width, height,duration,shutter,gain):
     filename = 'picture_{}.jpg'.format(timestamp)
     output_file = os.path.join(os.path.expanduser("~"),"user_space", "static","picture_shutter", filename)
 
+    #taking a photo with the global shutter
     command = f"libcamera-jpeg -o {output_file} -t {duration} --width {width} --height {height} --shutter {shutter} --gain {gain}"
     subprocess.run(command, shell=True)
 
