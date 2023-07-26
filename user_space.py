@@ -66,10 +66,11 @@ def video():
 
 
 @socketio.on('stop_stream')
+"""the stream is stopped, we also stop taking periodic photos"""
 def stop_stream(data):
-    cron = CronTab(user='RPI6MM')
+    cron = CronTab(user='<name_camera>')
     for job in cron:
-        if job.command == '/home/RPI6MM/user_space/capture_image.sh >> /home/RPI6MM/user_space/sortie.txt 2>&1':
+        if job.command == '/home/<name_camera>/user_space/capture_image.sh >> /home/<name_camera>/user_space/sortie.txt 2>&1':
             cron.remove(job)
             cron.write()
     if data.get('stop') :
